@@ -1,6 +1,2 @@
 [functions]
   directory = "netlify/functions"
-
-[functions.environment]
-  SUPABASE_URL = "https://wqxmvqqkbxiykiotbusd.supabase.co"
-  SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxeG12cXFrYnhpeWtpb3RidXNkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODQ0NzI5NiwiZXhwIjoyMDY0MDIzMjk2fQ.gqCky_DjmakeqqsYCntmIwskWDRDitcjwfEv339Yc8U"
