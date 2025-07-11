@@ -1,27 +1,39 @@
+// tallywebhook.js (수정 후)
+
 import { createClient } from '@supabase/supabase-js';
 
-// 환경변수에서 불러오기
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
 
-// Tally Webhook → POST JSON 호출
 export async function handler(event) {
   try {
     const payload = JSON.parse(event.body);
-    // Tally 응답 구조에 따라 필드명 조정하세요
-    const voteValue = parseInt(payload.data['투표 숫자'], 10);
+    // Tally.so 응답 구조는 보통 fields 배열 형태입니다.
+    // 첫 번째 필드의 값을 가져오는 것이 더 안정적입니다.
+    const voteValue = parseInt(payload.data.fields[0].value, 10);
 
-    if (Number.isInteger(voteValue)) {
-      await supabase
-        .from('votes')
-        .insert({ value: voteValue });
+    if (isNaN(voteValue)) {
+        // 숫자가 아닌 값이 들어오면 에러 처리
+        throw new Error('Submitted value is not a number.');
+    }
+
+    // ★★★ 핵심 수정: 'voted_for_number' 컬럼에 데이터를 삽입합니다. ★★★
+    const { data, error } = await supabase
+      .from('votes')
+      .insert({ voted_for_number: voteValue });
+
+    // Supabase에서 에러가 발생했는지 확인하고 로그를 남깁니다.
+    if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
     }
 
     return { statusCode: 200, body: 'OK' };
+
   } catch (err) {
-    console.error(err);
-    return { statusCode: 500, body: 'Error' };
+    console.error('Handler error:', err);
+    return { statusCode: 500, body: err.message };
   }
 }
