@@ -2,8 +2,8 @@
 
 // 1) Supabase 클라이언트 세팅 (이 부분은 그대로)
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-const SUPABASE_URL = 'https://<your-project>.supabase.co'; // ★본인 정보로 교체★
-const SUPABASE_KEY = '<your-anon-key>'; // ★본인 정보로 교체★
+const SUPABASE_URL = 'https://wqxmvqqkbxiykiotbusd.supabase.co'; // ★본인 정보로 교체★
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxeG12cXFrYnhpeWtpb3RidXNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NDcyOTYsImV4cCI6MjA2NDAyMzI5Nn0.RmB92YtjLPMx4tkQibuRVT_T4DL3_O8Pny3ZA9DU0tk'; // ★본인 정보로 교체★
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 2) D3 시뮬레이션 설정 (이 부분은 그대로)
