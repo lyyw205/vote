@@ -1,186 +1,24 @@
-<!-- 파일 경로: /grl-vote-app/public/vote.html -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 인기 투표 현황</title>
-    <style>
-        /* === 기본 배경 및 스타일 === */
-        body {
-            background-color: #0d0d2b; /* 어두운 남색 배경 */
-            color: white;
-            font-family: 'Arial', sans-serif;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
-        }
-        #vote-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* === 투표 버블(공) 스타일 === */
-        .vote-bubble {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, #ff4b8d, #d42e6a); /* 핑크빛 그라데이션 */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 30px #ff4b8d, inset 0 0 15px rgba(255, 255, 255, 0.6);
-            transition: all 1s ease-in-out; /* 크기가 변할 때 부드럽게 */
-            animation: float 10s ease-in-out infinite; /* 떠다니는 애니메이션 */
-            opacity: 0;
-            transform: scale(0.5);
-            animation-fill-mode: forwards;
-        }
-        
-        /* 나타날 때 애니메이션 */
-        .vote-bubble.visible {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .vote-number {
-            font-size: 2.5em; /* JS에서 크기 조절 */
-            font-weight: bold;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-        }
-        .vote-count {
-            font-size: 1em; /* JS에서 크기 조절 */
-            margin-top: 5px;
-            font-weight: bold;
-        }
-
-        /* === 연결 상태 표시 스타일 === */
-        #status {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: opacity 0.5s;
-        }
-
-        /* === 애니메이션 키프레임 === */
-        @keyframes float {
-            0% { transform: translateY(0px) translateX(0px); }
-            25% { transform: translateY(-15px) translateX(20px); }
-            50% { transform: translateY(10px) translateX(-15px); }
-            75% { transform: translateY(15px) translateX(10px); }
-            100% { transform: translateY(0px) translateX(0px); }
-        }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>영역 싸움 투표</title>
+  <style>
+    body, html { margin:0; padding:0; overflow:hidden; }
+    #viz {
+      position: absolute; top:0; left:0;
+      width:100vw; height:100vh;
+      background:#fafafa;
+    }
+  </style>
 </head>
 <body>
-    <div id="vote-container"></div>
-    <div id="status">연결 중...</div>
+  <div id="viz"></div>
 
-    <script>
-        // ★★★ 이 주소는 Netlify 배포 후, 부여받은 최종 주소로 꼭 변경해야 합니다! ★★★
-        const WEBSOCKET_URL = 'wss://grlvote.netlify.app/ws';
-
-        const container = document.getElementById('vote-container');
-        const statusDiv = document.getElementById('status');
-        let existingBubbles = {}; // 생성된 공 객체를 관리하는 변수
-
-        // WebSocket 연결을 시도하는 함수
-        function connect() {
-            const socket = new WebSocket(WEBSOCKET_URL);
-
-            socket.onopen = () => {
-                statusDiv.textContent = '서버 연결 성공 ✅';
-                console.log('WebSocket 연결이 수립되었습니다.');
-                setTimeout(() => { statusDiv.style.opacity = '0'; }, 2000); // 2초 후 상태 메시지 숨김
-            };
-
-            // 서버로부터 메시지를 받았을 때 실행되는 부분
-            socket.onmessage = (event) => {
-                const message = JSON.parse(event.data);
-                console.log('서버로부터 메시지 수신:', message);
-
-                switch(message.type) {
-                    case 'new_vote':
-                        const { number, votes } = message.data;
-                        renderBubble(number, votes);
-                        break;
-                    case 'initial_state':
-                        clearAllBubbles();
-                        for(const [number, votes] of Object.entries(message.data)) {
-                            renderBubble(parseInt(number), votes);
-                        }
-                        break;
-                    case 'reset':
-                        clearAllBubbles();
-                        break;
-                }
-            };
-
-            // 연결이 끊겼을 때
-            socket.onclose = () => {
-                statusDiv.style.opacity = '1';
-                statusDiv.textContent = '연결 끊김 ❌. 3초 후 재연결합니다.';
-                console.log('WebSocket 연결이 끊겼습니다. 3초 후 재연결을 시도합니다.');
-                setTimeout(connect, 3000); // 3초 후 재연결 시도
-            };
-
-            // 에러 발생 시
-            socket.onerror = (error) => {
-                statusDiv.textContent = '연결 에러 ❗';
-                console.error('WebSocket 에러:', error);
-                socket.close();
-            };
-        }
-
-        // 득표수에 따라 공의 크기를 계산하는 함수
-        function calculateSize(votes) {
-            return 120 + (votes - 1) * 25; // 기본 크기 120px, 1표당 25px씩 증가
-        }
-
-        // 화면에 공을 그리거나 업데이트하는 함수
-        function renderBubble(number, votes) {
-            const id = `bubble-${number}`;
-            let bubble = existingBubbles[id];
-
-            if (!bubble) {
-                bubble = document.createElement('div');
-                bubble.id = id;
-                bubble.className = 'vote-bubble';
-                bubble.style.left = `${10 + Math.random() * 80}%`;
-                bubble.style.top = `${10 + Math.random() * 80}%`;
-                bubble.style.animationDelay = `${Math.random() * -10}s`;
-                bubble.innerHTML = `<span class="vote-number">${number}</span><span class="vote-count">${votes}표</span>`;
-                container.appendChild(bubble);
-                existingBubbles[id] = bubble;
-                setTimeout(() => bubble.classList.add('visible'), 100);
-            }
-
-            const size = calculateSize(votes);
-            bubble.style.width = `${size}px`;
-            bubble.style.height = `${size}px`;
-            bubble.querySelector('.vote-number').style.fontSize = `${size / 45}em`;
-            bubble.querySelector('.vote-count').style.fontSize = `${size / 100}em`;
-            bubble.querySelector('.vote-count').textContent = `${votes}표`;
-        }
-        
-        // 화면의 모든 공을 지우는 함수
-        function clearAllBubbles() {
-            container.innerHTML = '';
-            existingBubbles = {};
-            console.log('화면의 모든 투표 현황을 초기화했습니다.');
-        }
-
-        // 페이지가 로드되면 WebSocket 연결 시작
-        connect();
-    </script>
+  <!-- D3.js -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <!-- Supabase JS (ESM) -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>

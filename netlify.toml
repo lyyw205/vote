@@ -1,16 +1,2 @@
-# netlify.toml
-
-# 빌드 설정
-[build]
-  publish = "public"
-
-# ★★★ 이 부분을 새로 추가하세요. ★★★
-# Edge Function 코드가 어디에 있는지 명시적으로 알려줍니다.
-[edge_functions]
-  directory = "netlify/edge-functions"
-
-# 기존 Edge Function 경로 설정
-# 이제 Netlify는 'netlify/edge-functions' 폴더 안에서 'vote-broadcaster'를 찾습니다.
-[[edge_functions]]
-  path = "/*"
-  function = "vote-broadcaster"
+[functions]
+  directory = "netlify/functions"
