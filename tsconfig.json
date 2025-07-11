@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable",
+      "deno.ns"  // Deno 전역 객체(Deno.upgradeWebSocket 등)를 인식하게 함
+    ],
+    "types": [
+      "@netlify/functions" // Context 타입을 인식하게 함
+    ],
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  // "include" 설정을 추가하여 이 규칙이 적용될 폴더를 명시적으로 지정
+  "include": [
+    "netlify/edge-functions/**/*.ts" 
+  ]
+}
