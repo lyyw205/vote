@@ -3,22 +3,70 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>영역 싸움 투표</title>
+  <title>실시간 영역 싸움</title>
   <style>
-    body, html { margin:0; padding:0; overflow:hidden; }
-    #viz {
-      position: absolute; top:0; left:0;
-      width:100vw; height:100vh;
-      background:#fafafa;
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
+    #viz {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+    /* 텍스트 스타일 */
+    .label {
+      fill: white;
+      font-size: 24px;
+      font-weight: 700;
+      text-anchor: middle;
+      pointer-events: none;
+      paint-order: stroke;
+      stroke: #1a1a2e;
+      stroke-width: 4px;
+      stroke-linecap: butt;
+      stroke-linejoin: miter;
+    }
+
+    #star-field {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      pointer-events: none; /* 별이 클릭되지 않도록 */
+      opacity: 35%;
+    }
+
+    .star {
+      position: absolute;
+      background-color: white;
+      border-radius: 50%;
+      animation: move-star linear infinite;
+    }
+    
+    .star-wrapper {
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+    }
+
   </style>
 </head>
 <body>
-  <div id="viz"></div>
-
-  <!-- D3.js -->
-  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-  <!-- Supabase JS (ESM) -->
-  <script type="module" src="script.js"></script>
+  <!-- 별 배경을 위한 div들 -->
+  <div class="star-wrapper">
+    <div id="star-field"></div>
+    <div id="viz"></div>
+  </div>
+  <!-- 라이브러리 및 메인 스크립트 -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script type="module">
+    import(`./script.js?v=${new Date().getTime()}`);
+  </script>
 </body>
 </html>
